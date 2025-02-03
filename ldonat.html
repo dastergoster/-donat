@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Донат для стримера</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .donate-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .donate-container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ff6f61;
+        }
+        .form-control {
+            background-color: #3a3a3a;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .form-control:focus {
+            background-color: #4a4a4a;
+            color: #fff;
+            border-color: #ff6f61;
+            box-shadow: none;
+        }
+        .btn-primary {
+            background-color: #ff6f61;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .btn-primary:hover {
+            background-color: #ff4a3d;
+        }
+        .usd-equivalent {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        /* Кастомные стрелочки для выпадающих списков */
+        .custom-select {
+            appearance: none; /* Убираем стандартные стрелки */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="donate-container">
+        <h1>Поддержать стримера</h1>
+        <form id="donateForm">
+            <div class="mb-3">
+                <label for="nickname" class="form-label">Никнейм:</label>
+                <input type="text" class="form-control" id="nickname" required>
+            </div>
+            <div class="mb-3">
+                <label for="network" class="form-label">Сеть:</label>
+                <select class="form-control custom-select" id="network" required>
+                    <option value="Ton">Ton (The Open Network)</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="crypto" class="form-label">Криптовалюта:</label>
+                <select class="form-control custom-select" id="crypto" required>
+                    <option value="Ton">Ton</option>
+                    <option value="$GOVNO">$GOVNO</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="amount" class="form-label">Количество:</label>
+                <input type="number" class="form-control" id="amount" step="0.0001" required>
+                <div class="usd-equivalent" id="usdEquivalent">~ 0 USD</div>
+            </div>
+            <div class="mb-3">
+                <label for="message" class="form-label">Сообщение:</label>
+                <textarea class="form-control" id="message" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Отправить донат</button>
+        </form>
+    </div>
+
+    <script>
+        // Курсы криптовалют (примерные значения)
+        const cryptoRates = {
+            Ton: 2.5, // 1 Ton = 2.5 USD
+            "$GOVNO": 0.01, // 1 $GOVNO = 0.01 USD
+        };
+
+        // Обновление эквивалента в USD
+        document.getElementById('amount').addEventListener('input', function() {
+            const crypto = document.getElementById('crypto').value;
+            const amount = parseFloat(this.value) || 0;
+            const usdEquivalent = amount * cryptoRates[crypto];
+            document.getElementById('usdEquivalent').textContent = `~ ${usdEquivalent.toFixed(2)} USD`;
+        });
+
+        document.getElementById('crypto').addEventListener('change', function() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const usdEquivalent = amount * cryptoRates[this.value];
+            document.getElementById('usdEquivalent').textContent = `~ ${usdEquivalent.toFixed(2)} USD`;
+        });
+
+        // Отправка формы
+        document.getElementById('donateForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nickname = document.getElementById('nickname').value;
+            const network = document.getElementById('network').value;
+            const crypto = document.getElementById('crypto').value;
+            const amount = document.getElementById('amount').value;
+            const message = document.getElementById('message').value;
+
+            fetch('/donate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nickname, network, crypto, amount, message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Донат успешно отправлен!');
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        });
+    </script>
+</body>
+</html>
